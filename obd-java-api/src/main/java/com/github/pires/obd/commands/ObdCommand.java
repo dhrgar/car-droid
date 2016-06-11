@@ -72,10 +72,12 @@ public abstract class ObdCommand {
      */
     public void run(InputStream in, OutputStream out) throws IOException,
             InterruptedException {
-        start = System.currentTimeMillis();
-        sendCommand(out);
-        readResult(in);
-        end = System.currentTimeMillis();
+        synchronized (ObdCommand.class) {//Only one command can write and read a data in one time.
+            start = System.currentTimeMillis();
+            sendCommand(out);
+            readResult(in);
+            end = System.currentTimeMillis();
+        }
     }
 
     /**

@@ -13,9 +13,12 @@ import android.util.Log;
 import com.github.pires.obd.commands.SpeedCommand;
 import com.github.pires.obd.commands.engine.RPMCommand;
 import com.github.pires.obd.commands.protocol.EchoOffCommand;
+import com.github.pires.obd.commands.protocol.HeadersOffCommand;
 import com.github.pires.obd.commands.protocol.LineFeedOffCommand;
+import com.github.pires.obd.commands.protocol.ObdRawCommand;
 import com.github.pires.obd.commands.protocol.ObdResetCommand;
 import com.github.pires.obd.commands.protocol.SelectProtocolCommand;
+import com.github.pires.obd.commands.protocol.SpacesOffCommand;
 import com.github.pires.obd.commands.protocol.TimeoutCommand;
 import com.github.pires.obd.enums.ObdProtocols;
 
@@ -299,9 +302,13 @@ public class BluetoothService {
             mmInStream = tmpIn;
             mmOutStream = tmpOut;
 
+            ObdResetCommand obdResetCommand = new ObdResetCommand();
 
            try {
-               new ObdResetCommand().run(mmInStream, mmOutStream);
+               new ObdRawCommand("ATD").run(mmInStream, mmOutStream);
+               obdResetCommand.run(mmInStream, mmOutStream);
+               Log.i("RESET COMMAND:",obdResetCommand.getFormattedResult());
+               Log.i("RESET COMMAND NAME:",obdResetCommand.getName());
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (InterruptedException e) {
@@ -312,9 +319,11 @@ public class BluetoothService {
             try {
 
 
-              //  new EchoOffCommand().run(mmInStream, mmOutStream);
-               // new LineFeedOffCommand().run(mmInStream, mmOutStream);
-                new TimeoutCommand(70).run(mmInStream, mmOutStream);
+                new EchoOffCommand().run(mmInStream, mmOutStream);
+                new LineFeedOffCommand().run(mmInStream, mmOutStream);
+                new SpacesOffCommand().run(mmInStream, mmOutStream);
+                new HeadersOffCommand().run(mmInStream, mmOutStream);
+                new TimeoutCommand(200).run(mmInStream, mmOutStream);
                 new SelectProtocolCommand(ObdProtocols.AUTO).run(mmInStream, mmOutStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -369,7 +378,7 @@ public class BluetoothService {
                     mHandler.obtainMessage(MessageHandlingConstants.MESSAGE_READ, rawData.getBytes().length, -1, rawData.getBytes())
                             .sendToTarget();
                             */
-                    sleep(10);
+                    sleep(100);
                 } catch (IOException e) {
                     Log.e(TAG, "disconnected", e);
                     //connectionLost();
